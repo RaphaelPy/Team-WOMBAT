@@ -1,4 +1,4 @@
-# Banking App – Projektplanung (KW03)
+# Banking App – Projektplanung (KW03) test
 
 ## Projektübersicht
 Dieses Projekt ist eine einfache **Banking-App mit MySQL-Datenbankanbindung**, die über **phpMyAdmin** verwaltet wird.  
