@@ -16,6 +16,9 @@ namespace Banking_app
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly string _connectionString = 
+            "server=mysql.pb.bib.de;uid=pbt3h24akr;pwd=zJpyj6GPvtK6;database=pbt3h24akr_Wombank";
+
         public MainWindow()
         {
             InitializeComponent();
