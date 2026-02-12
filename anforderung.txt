@@ -1,0 +1,61 @@
+Formal / Organisatorisch 
+
+2er Teams 
+
+Gittea (Historie muss vorhanden sein) 
+
+Quelle / Hilfsmittel zur Lösung der Aufgabe muss angegeben werden (als Kommentar im Code) 
+
+Ausgenommen sind Themen, die im Unterricht behandelt wurden 
+
+Datum + URL bei Webseiten, Foren, etc. 
+
+Datum + KI System + Prompts in einer PDF 
+
+Nicht belegter Code wird nicht bewertet!  
+
+ 
+
+Umfang / Inhalt 
+
+Planung (1 Dokument) bis Ende KW03 
+
+Auflistung der Funktionen (Organisiert nach Kann / Muss-Kriterien) 
+
+Skizzen der Views 
+
+Datenbankanbindung 
+
+Datenmodel mit min. 4 Tabelle 
+
+Alle CRUD min. 1x 
+
+Multiview-Anwendung sein -> min. 4 Views (Tabs, Pages oder nur UserController) 
+
+Mindestens 2 verschiedene Rollen (z.B. Benutzer & Admins) 
+
+Fehlerbehandlung beim DB-Zugriff 
+
+Sinnvolle Validierung der eingehenden Daten 
+
+Abgesichert gegen SQL-Injections 
+
+Zeitlicher Umfang 16 * 90 * 2 / 60 = 48  abzgl. Orga = 40 Stunden 
+
+ 
+
+ 
+
+ 
+
+Abgabe: 
+
+Donnerstag 05.03. 
+
+Umfang: C#-Projekt & SQL-Code (mit Testdaten) 
+
+ 
+
+Präsentation des Projektes KW 11 
+
+11./12.03. 
