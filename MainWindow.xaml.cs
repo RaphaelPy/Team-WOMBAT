@@ -24,7 +24,7 @@ namespace Banking_app
                 {
                     conn.Open();
 
-                    // HIER Tabellenname anpassen falls nötig
+                   
                     string query = "SELECT * FROM users";
 
                     MySqlDataAdapter adapter = new MySqlDataAdapter(query, conn);
