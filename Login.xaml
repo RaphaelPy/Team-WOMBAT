@@ -1,49 +1,55 @@
-﻿<Window x:Class="Banking_app.Login"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Banking_app"
-        mc:Ignorable="d"
-        Title="Wombat Bank Login" 
-        Icon="/Wombat_Bank.ico"
-        Height="450" Width="800">
+﻿<Window
+    x:Class="Banking_app.Login"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Banking_app"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="WomBank Login"
+    Width="800"
+    Height="450"
+    Icon="/Wombat_Bank.ico"
+    mc:Ignorable="d">
     <Grid Margin="20">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Titel -->
-        <TextBlock Text="Anmeldung"
-                   FontSize="22"
-                   FontWeight="Bold"
-                   HorizontalAlignment="Center"
-                   Margin="0,0,0,25"/>
+        <!--  Titel  -->
+        <TextBlock
+            Margin="0,0,0,25"
+            HorizontalAlignment="Center"
+            FontSize="22"
+            FontWeight="Bold"
+            Text="Anmeldung" />
 
-        <!-- Benutzername -->
+        <!--  Benutzername  -->
         <StackPanel Grid.Row="1">
-            <TextBlock Text="Benutzername"/>
-            <TextBox x:Name="txtUser"
-                     Margin="0,5,0,15"
-                     Height="25"/>
+            <TextBlock Text="Benutzername" />
+            <TextBox
+                x:Name="txtUser"
+                Height="25"
+                Margin="0,5,0,15" />
         </StackPanel>
 
-        <!-- Passwort -->
+        <!--  Passwort  -->
         <StackPanel Grid.Row="2">
-            <TextBlock Text="Passwort"/>
-            <PasswordBox x:Name="txtPassword"
-                         Margin="0,5,0,25"
-                         Height="25"/>
+            <TextBlock Text="Passwort" />
+            <PasswordBox
+                x:Name="txtPassword"
+                Height="25"
+                Margin="0,5,0,25" />
         </StackPanel>
 
-        <!-- Login Button -->
-        <Button Grid.Row="3"
-                Content="Anmelden"
-                Height="35"
-                Click="Login_Click"/>
+        <!--  Login Button  -->
+        <Button
+            Grid.Row="3"
+            Height="35"
+            Click="Login_Click"
+            Content="Anmelden" />
     </Grid>
 </Window>

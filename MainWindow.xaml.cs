@@ -1,27 +1,43 @@
-﻿using System.Text;
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Data;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Banking_app
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly string _connectionString = 
+        private readonly string _connectionString =
             "server=mysql.pb.bib.de;uid=pbt3h24akr;pwd=zJpyj6GPvtK6;database=pbt3h24akr_Wombank";
 
         public MainWindow()
         {
             InitializeComponent();
+            LoadData(); // beim Start laden
+        }
+
+        private void LoadData()
+        {
+            try
+            {
+                using (MySqlConnection conn = new MySqlConnection(_connectionString))
+                {
+                    conn.Open();
+
+                    // HIER Tabellenname anpassen falls nötig
+                    string query = "SELECT * FROM users";
+
+                    MySqlDataAdapter adapter = new MySqlDataAdapter(query, conn);
+                    DataTable table = new DataTable();
+                    adapter.Fill(table);
+
+                    dgUsers.ItemsSource = table.DefaultView;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("DB Fehler:\n" + ex.Message);
+            }
         }
     }
 }
