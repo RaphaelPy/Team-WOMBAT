@@ -1,22 +1,38 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Data;
 using System.Windows;
 
 namespace Banking_app
 {
     public partial class MainWindow : Window
     {
+        // DB bleibt im Window
         private readonly string _connectionString =
             "server=mysql.pb.bib.de;uid=pbt3h24akr;pwd=zJpyj6GPvtK6;database=pbt3h24akr_Wombank";
 
-        public MainWindow()
+        private readonly string _username; 
+        private user _userPage;           
+
+        // Username wird übergeben
+        public MainWindow(string username)
         {
             InitializeComponent();
-            LoadData();
+            _username = username;
         }
 
-        private void LoadData()
+        // Page laden
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            _userPage = new user();
+            MainFrame.Navigate(_userPage);
+
+            //  Window pusht Daten in die Page
+            _userPage.SetWelcomeText($"Willkommen, {_username}!");
+
+            // Wenn du später DB-Userdaten laden willst: LoadUserData(); (für Raphael)
+        }
+
+        private void LoadUserData()
         {
             try
             {
@@ -24,16 +40,14 @@ namespace Banking_app
                 {
                     conn.Open();
 
-                    // Nur sinnvolle Spalten anzeigen (nicht alle)
-                    string query = @"SELECT user_id, username, role, is_active, created_at
-                                     FROM users
-                                     ORDER BY user_id;";
+                    string sql = @"SELECT username FROM users WHERE username=@u LIMIT 1;";
+                    using (var cmd = new MySqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@u", _username);
+                        var result = cmd.ExecuteScalar()?.ToString() ?? _username;
 
-                    var adapter = new MySqlDataAdapter(query, conn);
-                    var table = new DataTable();
-                    adapter.Fill(table);
-
-                    dgUsers.ItemsSource = table.DefaultView;
+                        _userPage?.SetWelcomeText($"Willkommen, {result}!");
+                    }
                 }
             }
             catch (Exception ex)
@@ -42,49 +56,10 @@ namespace Banking_app
             }
         }
 
-        private void ToggleActive_Click(object sender, RoutedEventArgs e)
+        private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            if (dgUsers.SelectedItem is not DataRowView row)
-            {
-                MessageBox.Show("Bitte einen Benutzer auswählen.");
-                return;
-            }
-
-            int userId = Convert.ToInt32(row["user_id"]);
-            bool isActive = Convert.ToBoolean(row["is_active"]);
-            bool newValue = !isActive;
-
-            try
-            {
-                using (var conn = new MySqlConnection(_connectionString))
-                {
-                    conn.Open();
-
-                    
-                    if (row["username"].ToString() == "admin")
-                    {
-                        MessageBox.Show("Admin kann nicht deaktiviert werden.");
-                        return;
-                    }
-
-                    string sql = @"UPDATE users 
-                                   SET is_active = @active 
-                                   WHERE user_id = @id;";
-
-                    using (var cmd = new MySqlCommand(sql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@active", newValue);
-                        cmd.Parameters.AddWithValue("@id", userId);
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                LoadData(); // refresh
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Update Fehler:\n" + ex.Message);
-            }
+            new Login().Show();
+            Close();
         }
     }
 }
