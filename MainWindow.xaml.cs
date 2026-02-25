@@ -1,38 +1,114 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Banking_app.userpages;
+using MySql.Data.MySqlClient;
 using System;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Threading;
+
 
 namespace Banking_app
 {
     public partial class MainWindow : Window
     {
-        // DB bleibt im Window
         private readonly string _connectionString =
             "server=mysql.pb.bib.de;uid=pbt3h24akr;pwd=zJpyj6GPvtK6;database=pbt3h24akr_Wombank";
 
-        private readonly string _username; 
-        private user _userPage;           
+        private readonly string _username;
 
-        // Username wird übergeben
+        private user _userPage;
+
+        private DispatcherTimer _kickTimer;
+        private bool _isLoggingOut = false;
+
         public MainWindow(string username)
         {
             InitializeComponent();
             _username = username;
+
+            
         }
 
-        // Page laden
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Sicherheit: Falls irgendwas schief ist, nicht crashen
+            if (MainFrame == null)
+            {
+                MessageBox.Show("MainFrame wurde nicht geladen!");
+                return;
+            }
+
+            NavigateToStart();
+            StartLiveKickCheck();
+        }
+
+        // =========================
+        // ===== NAVIGATION ========
+        // =========================
+
+        private void NavigateToStart()
         {
             _userPage = new user();
             MainFrame.Navigate(_userPage);
-
-            //  Window pusht Daten in die Page
             _userPage.SetWelcomeText($"Willkommen, {_username}!");
-
-            // Wenn du später DB-Userdaten laden willst: LoadUserData(); (für Raphael)
         }
 
-        private void LoadUserData()
+        private void MenuList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (MainFrame == null) return;
+            if (_isLoggingOut) return;
+
+            if (MenuList.SelectedItem is not ListBoxItem item)
+                return;
+
+            string choice = item.Content?.ToString() ?? "";
+
+            switch (choice)
+            {
+                case "Start":
+                    NavigateToStart();
+                    break;
+
+                case "Konto":
+                    MainFrame.Navigate(new KontoPage());
+                    break;
+
+                case "Transaktionen":
+                    MainFrame.Navigate(new TransaktionenPage());
+                    break;
+
+                case "Karten":
+                    MainFrame.Navigate(new KartenPage(_connectionString, _username));
+                    break;
+
+                case "Einstellungen":
+                    MainFrame.Navigate(new EinstellungenPage());
+                    break;
+            }
+        }
+
+        // =========================
+        // ===== LIVE KICK =========
+        // =========================
+
+        private void StartLiveKickCheck()
+        {
+            _kickTimer = new DispatcherTimer();
+            _kickTimer.Interval = TimeSpan.FromSeconds(3);
+            _kickTimer.Tick += KickTimer_Tick;
+            _kickTimer.Start();
+        }
+
+        private void KickTimer_Tick(object sender, EventArgs e)
+        {
+            if (_isLoggingOut) return;
+
+            if (!IsUserStillActive())
+            {
+                ForceLogoutBecauseBlocked();
+            }
+        }
+
+        private bool IsUserStillActive()
         {
             try
             {
@@ -40,26 +116,56 @@ namespace Banking_app
                 {
                     conn.Open();
 
-                    string sql = @"SELECT username FROM users WHERE username=@u LIMIT 1;";
+                    const string sql =
+                        @"SELECT is_active FROM users WHERE username=@u LIMIT 1;";
+
                     using (var cmd = new MySqlCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@u", _username);
-                        var result = cmd.ExecuteScalar()?.ToString() ?? _username;
+                        var result = cmd.ExecuteScalar();
 
-                        _userPage?.SetWelcomeText($"Willkommen, {result}!");
+                        if (result == null)
+                            return false;
+
+                        return Convert.ToInt32(result) == 1;
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show("DB Fehler:\n" + ex.Message);
+                // Wenn DB kurz nicht erreichbar ist -> nicht sofort rauswerfen
+                return true;
             }
         }
 
-        private void Logout_Click(object sender, RoutedEventArgs e)
+        private void ForceLogoutBecauseBlocked()
         {
+            _isLoggingOut = true;
+            _kickTimer?.Stop();
+
+            MessageBox.Show("Dein Account wurde gesperrt. Du wirst abgemeldet.");
+
             new Login().Show();
             Close();
+        }
+
+        // =========================
+        // ===== LOGOUT ============
+        // =========================
+
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            _isLoggingOut = true;
+            _kickTimer?.Stop();
+
+            new Login().Show();
+            Close();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            _kickTimer?.Stop();
+            base.OnClosed(e);
         }
     }
 }

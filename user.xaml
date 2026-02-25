@@ -1,18 +1,32 @@
-﻿<Page x:Class="Banking_app.user"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Title="user">
+﻿<Page
+    x:Class="Banking_app.user"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="user">
 
     <Grid Margin="16">
-        <StackPanel>
-            <TextBlock FontSize="22"
-                       FontWeight="SemiBold"
-                       Text="User Ansicht"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <TextBlock x:Name="txtWelcome"
-                       Margin="0,12,0,0"
-                       FontSize="14"
-                       Text="Willkommen!"/>
+        <TextBlock
+            Grid.Row="0"
+            FontSize="22"
+            FontWeight="SemiBold"
+            Text="User Ansicht" />
+
+        <TextBlock
+            x:Name="txtWelcome"
+            Grid.Row="1"
+            Margin="0,12,0,0"
+            FontSize="14"
+            Text="Willkommen!" />
+
+        <!--  optional: Platzhalter für späteren Content  -->
+        <StackPanel Grid.Row="2" Margin="0,16,0,0">
+            <TextBlock Text="Hier kommen später deine Inhalte rein." />
         </StackPanel>
     </Grid>
 </Page>

@@ -17,7 +17,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- Sidebar -->
-        <StackPanel Grid.Column="0" Background="#FF2B2B2B" Padding="12">
+        <StackPanel Grid.Column="0" Background="#FF2B2B2B" Margin="12">
             <TextBlock Margin="8,6,8,14"
                        Foreground="White"
                        FontSize="18"

@@ -6,10 +6,13 @@
     xmlns:local="clr-namespace:Banking_app"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="WomBank Login"
-    Width="800"
-    Height="450"
+    Width="500"
+    Height="300"
     Icon="/Wombat_Bank.ico"
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+
     <Grid Margin="20">
 
         <Grid.RowDefinitions>
@@ -50,6 +53,7 @@
             Grid.Row="3"
             Height="35"
             Click="Login_Click"
-            Content="Anmelden" />
+            Content="Anmelden"
+            IsDefault="True" />
     </Grid>
 </Window>

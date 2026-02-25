@@ -1,0 +1,45 @@
+﻿<Page
+    x:Class="Banking_app.userpages.KartenPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Karten">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!--  Buttons  -->
+        <StackPanel Grid.Column="0" Margin="10">
+            <TextBlock
+                Margin="0,0,0,12"
+                FontSize="18"
+                FontWeight="SemiBold"
+                Text="Karten" />
+
+            <Button
+                Height="40"
+                Margin="0,0,0,10"
+                Click="Reload_Click"
+                Content="Neu laden" />
+
+            <Button
+                Height="40"
+                Margin="0,0,0,10"
+                Click="ToggleBlock_Click"
+                Content="Sperren / Entsperren" />
+
+
+        </StackPanel>
+
+        <!--  DataGrid  -->
+        <DataGrid
+            x:Name="dgCards"
+            Grid.Column="1"
+            Margin="10"
+            AutoGenerateColumns="True"
+            IsReadOnly="True"
+            SelectionMode="Single" />
+    </Grid>
+</Page>

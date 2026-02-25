@@ -59,3 +59,17 @@ Umfang: C#-Projekt & SQL-Code (mit Testdaten)
 Präsentation des Projektes KW 11 
 
 11./12.03. 
+
+
+extras 
+
+Automatische aktualisierung
+
+----------------------------
+User
+kartendeaktivieren
+support ticket 
+----------------------------
+admin
+Kontoalegen
+----------------------------
