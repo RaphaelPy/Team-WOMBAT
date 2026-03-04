@@ -8,11 +8,11 @@ namespace Banking_app.userpages
 {
     public partial class TransaktionenPage : Page
     {
-        // Ich merke mir DB-Verbindung und den eingeloggten User
+        
         private readonly string _connectionString;
         private readonly string _username;
 
-        // Ich speichere die geladenen Daten, damit ich filtern kann
+        
         private DataTable _data;
 
         public TransaktionenPage(string connectionString, string username)
@@ -47,7 +47,7 @@ namespace Banking_app.userpages
             dgTransfers.ItemsSource = view;
         }
 
-        // Ich lade alle Transfers, die von meinen Accounts ausgehen
+        
         private void LoadTransfers()
         {
             try
@@ -55,33 +55,51 @@ namespace Banking_app.userpages
                 using var conn = new MySqlConnection(_connectionString);
                 conn.Open();
 
+                
                 string sql = @"
-                    SELECT
-                        t.transfer_id,
-                        t.from_account_id,
-                        t.to_beneficiary_id,
-                        t.to_name,
-                        t.to_iban,
-                        t.amount,
-                        t.purpose,
-                        t.status,
-                        t.created_at
-                    FROM transfers t
-                    JOIN accounts a ON a.account_id = t.from_account_id
-                    JOIN users u ON u.user_id = a.user_id
-                    WHERE u.username = @u
-                    ORDER BY t.created_at DESC;";
+            -- OUT: von mir weg (minus)
+            SELECT
+                t.transfer_id,
+                t.created_at,
+                'OUT' AS direction,
+                t.to_name AS partner,
+                t.to_iban AS partner_iban,
+                (-t.amount) AS amount_signed,
+                t.status
+            FROM transfers t
+            JOIN accounts a ON a.account_id = t.from_account_id
+            JOIN users u ON u.user_id = a.user_id
+            WHERE u.username = @u
+
+            UNION ALL
+
+            -- IN: zu mir hin (plus) - Empfänger IBAN ist eine meiner IBANs
+            SELECT
+                t.transfer_id,
+                t.created_at,
+                'IN' AS direction,
+                CONCAT('Von Konto ', t.from_account_id) AS partner,
+                acc_from.iban AS partner_iban,
+                (t.amount) AS amount_signed,
+                t.status
+            FROM transfers t
+            JOIN accounts acc_to ON acc_to.iban = t.to_iban
+            JOIN users u_to ON u_to.user_id = acc_to.user_id
+            LEFT JOIN accounts acc_from ON acc_from.account_id = t.from_account_id
+            WHERE u_to.username = @u
+
+            ORDER BY created_at DESC;";
 
                 using var cmd = new MySqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@u", _username);
 
-                _data = new DataTable();
-                new MySqlDataAdapter(cmd).Fill(_data);
+                var dt = new DataTable();
+                using (var ad = new MySqlDataAdapter(cmd))
+                {
+                    ad.Fill(dt);
+                }
 
-                // Filter zurücksetzen
-                _data.DefaultView.RowFilter = "";
-
-                dgTransfers.ItemsSource = _data.DefaultView;
+                dgTransfers.ItemsSource = dt.DefaultView;
             }
             catch (Exception ex)
             {

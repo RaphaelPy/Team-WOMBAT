@@ -134,12 +134,37 @@ namespace Banking_app.userpages
                 using var conn = new MySqlConnection(_connectionString);
                 conn.Open();
 
+                // OUT (von mir weg) = minus
+                // IN (zu mir hin)   = plus  (wenn to_iban meine IBAN ist)
                 using var cmd = new MySqlCommand(@"
-                    SELECT transfer_id, to_name, to_iban, amount, purpose, status, created_at
-                    FROM transfers
-                    WHERE from_account_id=@aid
-                    ORDER BY created_at DESC
-                    LIMIT 50;", conn);
+            SELECT
+                t.transfer_id,
+                t.created_at,
+                'OUT' AS direction,
+                t.to_name AS partner,
+                t.to_iban AS partner_iban,
+                (-t.amount) AS amount_signed,
+                t.status
+            FROM transfers t
+            WHERE t.from_account_id = @aid
+
+            UNION ALL
+
+            SELECT
+                t.transfer_id,
+                t.created_at,
+                'IN' AS direction,
+                CONCAT('Von Konto ', t.from_account_id) AS partner,
+                acc_from.iban AS partner_iban,
+                (t.amount) AS amount_signed,
+                t.status
+            FROM transfers t
+            JOIN accounts acc_to ON acc_to.iban = t.to_iban
+            LEFT JOIN accounts acc_from ON acc_from.account_id = t.from_account_id
+            WHERE acc_to.account_id = @aid
+
+            ORDER BY created_at DESC
+            LIMIT 50;", conn);
 
                 cmd.Parameters.AddWithValue("@aid", _selectedAccountId);
 
@@ -151,7 +176,6 @@ namespace Banking_app.userpages
 
                 DgTransfers.ItemsSource = dt.DefaultView;
 
-                // Kontostand nochmal frisch aus DB holen (falls er sich geändert hat)
                 RefreshAccountInfoFromDb();
             }
             catch (Exception ex)
@@ -189,7 +213,7 @@ namespace Banking_app.userpages
             }
             catch
             {
-               
+
             }
         }
 
@@ -224,14 +248,25 @@ namespace Banking_app.userpages
                 conn.Open();
                 using var tx = conn.BeginTransaction();
 
-                // Balance lesen (gesperrt)
+                // 1) Empfänger-Konto suchen (intern) - anhand IBAN
+                int? toAccountId = null;
+                using (var cmdFind = new MySqlCommand(
+                    "SELECT account_id FROM accounts WHERE iban=@iban LIMIT 1;", conn, tx))
+                {
+                    cmdFind.Parameters.AddWithValue("@iban", toIban);
+                    var r = cmdFind.ExecuteScalar();
+                    if (r != null)
+                        toAccountId = Convert.ToInt32(r);
+                }
+
+                // 2) Sender-Balance lesen (FOR UPDATE)
                 decimal currentBalance;
                 using (var cmdBal = new MySqlCommand(
                     "SELECT balance FROM accounts WHERE account_id=@aid FOR UPDATE;", conn, tx))
                 {
                     cmdBal.Parameters.AddWithValue("@aid", _selectedAccountId);
                     var r = cmdBal.ExecuteScalar();
-                    if (r == null) throw new Exception("Konto nicht gefunden.");
+                    if (r == null) throw new Exception("Sender-Konto nicht gefunden.");
                     currentBalance = Convert.ToDecimal(r);
                 }
 
@@ -242,7 +277,7 @@ namespace Banking_app.userpages
                     return;
                 }
 
-                // Balance abziehen
+                // 3) Sender abbuchen
                 using (var cmdUpd = new MySqlCommand(
                     "UPDATE accounts SET balance = balance - @amt WHERE account_id=@aid;", conn, tx))
                 {
@@ -251,7 +286,17 @@ namespace Banking_app.userpages
                     cmdUpd.ExecuteNonQuery();
                 }
 
-                // Transfer speichern
+                // 4) Wenn Empfänger-Konto existiert: Empfänger gutschreiben
+                if (toAccountId.HasValue)
+                {
+                    using var cmdCredit = new MySqlCommand(
+                        "UPDATE accounts SET balance = balance + @amt WHERE account_id=@to;", conn, tx);
+                    cmdCredit.Parameters.AddWithValue("@amt", amount);
+                    cmdCredit.Parameters.AddWithValue("@to", toAccountId.Value);
+                    cmdCredit.ExecuteNonQuery();
+                }
+
+                // 5) Transfer speichern (wie bisher)
                 using (var cmdIns = new MySqlCommand(@"
                     INSERT INTO transfers
                     (from_account_id, to_beneficiary_id, to_name, to_iban, amount, purpose, status)
