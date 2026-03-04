@@ -2,13 +2,47 @@
     x:Class="Banking_app.userpages.TransaktionenPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:Banking_app.userpages"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="TransaktionenPage"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    mc:Ignorable="d">
+    Title="Transaktionen">
 
-    <Grid />
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!--  Links: Buttons  -->
+        <StackPanel Grid.Column="0" Margin="10">
+            <TextBlock
+                Margin="0,0,0,12"
+                FontSize="18"
+                FontWeight="SemiBold"
+                Text="Transaktionen" />
+
+            <Button
+                Height="40"
+                Margin="0,0,0,10"
+                Click="Reload_Click"
+                Content="Neu laden" />
+
+            <Button
+                Height="40"
+                Margin="0,0,0,10"
+                Click="ShowAll_Click"
+                Content="Alle" />
+
+            <Button
+                Height="40"
+                Click="ShowOnlyFailed_Click"
+                Content="Nur fehlgeschlagen" />
+        </StackPanel>
+
+        <!--  Rechts: DataGrid  -->
+        <DataGrid
+            x:Name="dgTransfers"
+            Grid.Column="1"
+            Margin="10"
+            AutoGenerateColumns="True"
+            IsReadOnly="True"
+            SelectionMode="Single" />
+    </Grid>
 </Page>

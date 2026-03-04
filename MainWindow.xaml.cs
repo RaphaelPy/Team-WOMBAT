@@ -69,11 +69,11 @@ namespace Banking_app
                     break;
 
                 case "Konto":
-                    MainFrame.Navigate(new KontoPage());
+                    MainFrame.Navigate(new Banking_app.userpages.KontoPage(_connectionString, _username));
                     break;
 
                 case "Transaktionen":
-                    MainFrame.Navigate(new TransaktionenPage());
+                    MainFrame.Navigate(new Banking_app.userpages.TransaktionenPage(_connectionString, _username));
                     break;
 
                 case "Karten":

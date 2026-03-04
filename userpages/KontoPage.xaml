@@ -1,14 +1,86 @@
 ﻿<Page x:Class="Banking_app.userpages.KontoPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:Banking_app.userpages"
-      mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="KontoPage">
+      Title="Konto">
 
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Links: Konto + Überweisung -->
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="10">
+
+                <TextBlock Text="Konto"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,12"/>
+
+                <!-- Konto auswählen -->
+                <TextBlock Text="Konto auswählen" Margin="0,0,0,4"/>
+                <ComboBox x:Name="CbAccounts"
+                          Height="32"
+                          SelectionChanged="CbAccounts_SelectionChanged"/>
+
+                <!-- Kontostand -->
+                <Border Margin="0,12,0,12" Padding="10" BorderThickness="1" BorderBrush="#DDD">
+                    <StackPanel>
+                        <TextBlock Text="Kontostand" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="TxtBalance" Text="—" FontSize="22" Margin="0,6,0,0"/>
+                        <TextBlock x:Name="TxtIban" Text="IBAN: —" Opacity="0.8" Margin="0,6,0,0"/>
+                        <TextBlock x:Name="TxtAccStatus" Text="Status: —" Opacity="0.8" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="Überweisung"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,8"/>
+
+                <TextBlock Text="Empfänger Name" Margin="0,0,0,4"/>
+                <TextBox x:Name="TbToName" Height="30"/>
+
+                <TextBlock Text="Empfänger IBAN" Margin="0,10,0,4"/>
+                <TextBox x:Name="TbToIban" Height="30"/>
+
+                <TextBlock Text="Betrag" Margin="0,10,0,4"/>
+                <TextBox x:Name="TbAmount" Height="30" />
+
+                <TextBlock Text="Verwendungszweck (optional)" Margin="0,10,0,4"/>
+                <TextBox x:Name="TbPurpose" Height="30"/>
+
+                <Button x:Name="BtnSend"
+                        Height="40"
+                        Margin="0,12,0,0"
+                        Click="Send_Click"
+                        Content="Überweisung ausführen"/>
+
+                <Button Height="36"
+                        Margin="0,10,0,0"
+                        Click="Reload_Click"
+                        Content="Neu laden"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Rechts: letzte Transaktionen -->
+        <Grid Grid.Column="1" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Letzte Transaktionen"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,8"/>
+
+            <DataGrid x:Name="DgTransfers"
+                      Grid.Row="1"
+                      AutoGenerateColumns="True"
+                      IsReadOnly="True"
+                      SelectionMode="Single"/>
+        </Grid>
     </Grid>
 </Page>
