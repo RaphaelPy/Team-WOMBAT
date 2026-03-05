@@ -8,25 +8,88 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock
-            Grid.Row="0"
-            FontSize="22"
-            FontWeight="SemiBold"
-            Text="User Ansicht" />
+        <!--  Begrüßung  -->
+        <StackPanel Grid.Row="0">
+            <TextBlock
+                FontSize="22"
+                FontWeight="SemiBold"
+                Text="Dashboard" />
 
-        <TextBlock
-            x:Name="txtWelcome"
-            Grid.Row="1"
-            Margin="0,12,0,0"
-            FontSize="14"
-            Text="Willkommen!" />
-
-        <!--  optional: Platzhalter für späteren Content  -->
-        <StackPanel Grid.Row="2" Margin="0,16,0,0">
-            <TextBlock Text="Hier kommen später deine Inhalte rein." />
+            <TextBlock
+                x:Name="txtWelcome"
+                Margin="0,8,0,0"
+                FontSize="14"
+                Text="Willkommen!" />
         </StackPanel>
+
+        <!--  Kontostand  -->
+        <Border
+            Grid.Row="1"
+            Margin="0,16,0,0"
+            Padding="16"
+            BorderBrush="#DDD"
+            BorderThickness="1"
+            CornerRadius="6">
+
+            <StackPanel>
+                <TextBlock FontWeight="SemiBold" Text="Gesamtguthaben" />
+
+                <TextBlock
+                    x:Name="txtBalance"
+                    Margin="0,8,0,0"
+                    FontSize="28"
+                    FontWeight="Bold"
+                    Text="0,00 €" />
+            </StackPanel>
+
+        </Border>
+
+        <!--  Schnellaktionen  -->
+        <StackPanel
+            Grid.Row="2"
+            Margin="0,20,0,0"
+            Orientation="Horizontal">
+
+            <Button
+                Width="140"
+                Height="40"
+                Margin="0,0,10,0"
+                Click="Gotokonto"
+                Content="Überweisung" />
+
+            <Button
+                Width="140"
+                Height="40"
+                Margin="0,0,10,0"
+                Click="gototransaktionen"
+                Content="Transaktionen" />
+
+            <Button
+                Width="140"
+                Height="40"
+                Click="gotokarten"
+                Content="Karten" />
+        </StackPanel>
+
+        <!--  Letzte Transaktionen  -->
+        <StackPanel Grid.Row="3" Margin="0,20,0,0">
+
+            <TextBlock
+                FontSize="16"
+                FontWeight="SemiBold"
+                Text="Letzte Transaktionen" />
+
+            <DataGrid
+                x:Name="dgRecentTransfers"
+                Height="220"
+                Margin="0,10,0,0"
+                AutoGenerateColumns="True"
+                IsReadOnly="True" />
+        </StackPanel>
+
     </Grid>
 </Page>

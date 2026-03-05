@@ -32,7 +32,7 @@
                     Text="Menü" />
 
                 <ListBox x:Name="MenuList" SelectionChanged="MenuList_SelectionChanged">
-                    <ListBoxItem Content="Start" IsSelected="True" />
+                    <ListBoxItem Content="Start" />
                     <ListBoxItem Content="Konto" />
                     <ListBoxItem Content="Transaktionen" />
                     <ListBoxItem Content="Karten" />

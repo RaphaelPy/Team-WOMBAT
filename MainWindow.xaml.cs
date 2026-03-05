@@ -16,6 +16,8 @@ namespace Banking_app
         private readonly string _username;
 
         private user _userPage;
+        public string ConnectionString => _connectionString;
+        public string Username => _username;
 
         private DispatcherTimer _kickTimer;
         private bool _isLoggingOut = false;
@@ -37,6 +39,7 @@ namespace Banking_app
                 return;
             }
 
+            //Start page auf Kontopage ---> //MainFrame.Navigate(new Banking_app.userpages.KontoPage(_connectionString, _username));
             NavigateToStart();
             StartLiveKickCheck();
         }
@@ -48,8 +51,11 @@ namespace Banking_app
         private void NavigateToStart()
         {
             _userPage = new user();
-            MainFrame.Navigate(_userPage);
+
+            _userPage.SetConnection(_connectionString, _username);
             _userPage.SetWelcomeText($"Willkommen, {_username}!");
+
+            MainFrame.Navigate(_userPage);
         }
 
         private void MenuList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -81,7 +87,7 @@ namespace Banking_app
                     break;
 
                 case "Einstellungen":
-                    MainFrame.Navigate(new EinstellungenPage());
+                    MainFrame.Navigate(new EinstellungenPage(_connectionString, _username));
                     break;
             }
         }
