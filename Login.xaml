@@ -11,6 +11,7 @@
     Icon="/Wombat_Bank.ico"
     ResizeMode="NoResize"
     WindowStartupLocation="CenterScreen"
+    Background="#0B1F3A"
     mc:Ignorable="d">
 
     <Grid Margin="20">
@@ -22,38 +23,46 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!--  Titel  -->
+        <!-- Titel -->
         <TextBlock
             Margin="0,0,0,25"
             HorizontalAlignment="Center"
             FontSize="22"
             FontWeight="Bold"
+            Foreground="White"
             Text="Anmeldung" />
 
-        <!--  Benutzername  -->
+        <!-- Benutzername -->
         <StackPanel Grid.Row="1">
-            <TextBlock Text="Benutzername" />
+            <TextBlock Foreground="White" Text="Benutzername" />
             <TextBox
                 x:Name="txtUser"
                 Height="25"
-                Margin="0,5,0,15" />
+                Margin="0,5,0,15"
+                Background="#F2F6FF"
+                BorderBrush="#3B82F6" />
         </StackPanel>
 
-        <!--  Passwort  -->
+        <!-- Passwort -->
         <StackPanel Grid.Row="2">
-            <TextBlock Text="Passwort" />
+            <TextBlock Foreground="White" Text="Passwort" />
             <PasswordBox
                 x:Name="txtPassword"
                 Height="25"
-                Margin="0,5,0,25" />
+                Margin="0,5,0,25"
+                Background="#F2F6FF"
+                BorderBrush="#3B82F6" />
         </StackPanel>
 
-        <!--  Login Button  -->
+        <!-- Login Button -->
         <Button
             Grid.Row="3"
             Height="35"
             Click="Login_Click"
             Content="Anmelden"
-            IsDefault="True" />
+            IsDefault="True"
+            Background="#1E3A8A"
+            Foreground="White"
+            BorderBrush="#1E3A8A"/>
     </Grid>
 </Window>
