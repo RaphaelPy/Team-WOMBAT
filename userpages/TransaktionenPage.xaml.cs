@@ -1,63 +1,78 @@
-﻿using MySql.Data.MySqlClient;
-using System;
-using System.Data;
-using System.Windows;
-using System.Windows.Controls;
+﻿using MySql.Data.MySqlClient; // brauche ich für die verbindung zur mysql datenbank
+using System; // grundfunktionen von c#
+using System.Data; // brauche ich für datatable
+using System.Windows; // für wpf elemente wie messagebox
+using System.Windows.Controls; // für page, datagrid, buttons usw.
 
 namespace Banking_app.userpages
 {
-    public partial class TransaktionenPage : Page
+    public partial class TransaktionenPage : Page // seite die alle transaktionen anzeigt
     {
-        
+        // speichert die datenbankverbindung
         private readonly string _connectionString;
+
+        // speichert den aktuell eingeloggten benutzernamen
         private readonly string _username;
 
-        
+        // datatable zum speichern der geladenen daten
         private DataTable _data;
 
+        // konstruktor von der seite
         public TransaktionenPage(string connectionString, string username)
         {
-            InitializeComponent();
-            _connectionString = connectionString;
-            _username = username;
+            InitializeComponent(); // lädt das xaml design
 
+            _connectionString = connectionString; // verbindung speichern
+            _username = username; // username speichern
+
+            // wenn die seite geladen wird -> transfers laden
             Loaded += (_, __) => LoadTransfers();
         }
 
-        // Button: Neu laden
+        // button: daten neu laden
         private void Reload_Click(object sender, RoutedEventArgs e)
         {
-            LoadTransfers();
+            LoadTransfers(); // transaktionen erneut aus der datenbank laden
         }
 
-        // Button: Alle anzeigen
+        // button: alle transaktionen anzeigen
         private void ShowAll_Click(object sender, RoutedEventArgs e)
         {
+            // wenn noch keine daten geladen wurden -> abbrechen
             if (_data == null) return;
+
+            // datatable komplett im datagrid anzeigen
             dgTransfers.ItemsSource = _data.DefaultView;
         }
 
-        // Button: Nur fehlgeschlagen
+        // button: nur fehlgeschlagene transaktionen anzeigen
         private void ShowOnlyFailed_Click(object sender, RoutedEventArgs e)
         {
+            // wenn keine daten geladen wurden -> abbrechen
             if (_data == null) return;
 
+            // dataview erstellen
             var view = _data.DefaultView;
+
+            // filter setzen -> nur status "failed"
             view.RowFilter = "status = 'failed'";
+
+            // gefilterte daten im datagrid anzeigen
             dgTransfers.ItemsSource = view;
         }
 
-        
+        // lädt alle transaktionen vom user aus der datenbank
         private void LoadTransfers()
         {
             try
             {
+                // verbindung zur datenbank erstellen
                 using var conn = new MySqlConnection(_connectionString);
-                conn.Open();
+                conn.Open(); // verbindung öffnen
 
-                
+                // sql query um eingehende und ausgehende überweisungen zu laden
                 string sql = @"
-            -- OUT: von mir weg (minus)
+            -- OUT: überweisungen die von meinem konto weggehen
             SELECT
                 t.transfer_id,
                 t.created_at,
@@ -73,7 +88,7 @@ namespace Banking_app.userpages
 
             UNION ALL
 
-            -- IN: zu mir hin (plus) - Empfänger IBAN ist eine meiner IBANs
+            -- IN: überweisungen die zu meinem konto kommen
             SELECT
                 t.transfer_id,
                 t.created_at,
@@ -90,19 +105,27 @@ namespace Banking_app.userpages
 
             ORDER BY created_at DESC;";
 
+                // sql befehl erstellen
                 using var cmd = new MySqlCommand(sql, conn);
+
+                // username einsetzen
                 cmd.Parameters.AddWithValue("@u", _username);
 
+                // datatable erstellen
                 var dt = new DataTable();
+
+                // daten aus der datenbank laden
                 using (var ad = new MySqlDataAdapter(cmd))
                 {
                     ad.Fill(dt);
                 }
 
+                // daten im datagrid anzeigen
                 dgTransfers.ItemsSource = dt.DefaultView;
             }
             catch (Exception ex)
             {
+                // falls ein fehler beim laden passiert
                 MessageBox.Show("Fehler beim Laden:\n" + ex.Message);
             }
         }

@@ -1,102 +1,134 @@
-﻿using MySql.Data.MySqlClient;
-using System;
-using System.Data;
-using System.Globalization;
-using System.Windows;
-using System.Windows.Controls;
+﻿using MySql.Data.MySqlClient; // brauche ich für die verbindung mit mysql
+using System; // grundfunktionen von c#
+using System.Data; // brauche ich für datatable
+using System.Globalization; // brauche ich um zahlen richtig umzuwandeln
+using System.Windows; // für wpf sachen wie messagebox
+using System.Windows.Controls; // für page, combobox, datagrid usw.
 
 namespace Banking_app.userpages
 {
-    public partial class KontoPage : Page
+    public partial class KontoPage : Page // seite für konto und überweisungen
     {
+        // speichert die datenbankverbindung
         private readonly string _connectionString;
+
+        // speichert den namen vom aktuell eingeloggten user
         private readonly string _username;
 
+        // speichert die user_id aus der datenbank
         private int _userId = -1;
+
+        // speichert das aktuell ausgewählte konto
         private int _selectedAccountId = -1;
 
+        // konstruktor von der seite
         public KontoPage(string connectionString, string username)
         {
-            InitializeComponent();
+            InitializeComponent(); // lädt das xaml design
 
-            _connectionString = connectionString;
-            _username = username;
+            _connectionString = connectionString; // verbindung speichern
+            _username = username; // username speichern
 
-            Loaded += KontoPage_Loaded;
+            Loaded += KontoPage_Loaded; // wenn die seite geladen wird, wird diese methode aufgerufen
         }
 
+        // wird automatisch ausgeführt wenn die seite geladen ist
         private void KontoPage_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadUserId();
+            LoadUserId(); // user_id zum username aus der datenbank holen
+
+            // wenn keine gültige user_id gefunden wurde
             if (_userId <= 0)
             {
                 MessageBox.Show("User nicht gefunden.");
                 return;
             }
 
-            LoadAccounts();
+            LoadAccounts(); // konten vom user laden
         }
 
+        // wenn man auf reload klickt
         private void Reload_Click(object sender, RoutedEventArgs e)
         {
-            LoadAccounts();
+            LoadAccounts(); // konten neu laden
+
+            // wenn schon ein konto ausgewählt ist, dann auch die transfers neu laden
             if (_selectedAccountId > 0)
                 LoadTransfers();
         }
 
-        // ===== 1) user_id über username holen =====
+        // user_id über username holen
         private void LoadUserId()
         {
             try
             {
+                // verbindung zur datenbank erstellen
                 using var conn = new MySqlConnection(_connectionString);
-                conn.Open();
+                conn.Open(); // verbindung öffnen
 
+                // sql befehl: passende user_id zum username holen
                 using var cmd = new MySqlCommand(
                     "SELECT user_id FROM users WHERE username=@u LIMIT 1;", conn);
 
+                // username in die query einsetzen
                 cmd.Parameters.AddWithValue("@u", _username);
 
+                // einzelnen wert aus der datenbank holen
                 var result = cmd.ExecuteScalar();
+
+                // wenn nichts gefunden wurde -> -1, sonst richtige user_id
                 _userId = (result == null) ? -1 : Convert.ToInt32(result);
             }
             catch (Exception ex)
             {
+                // falls fehler passiert
                 MessageBox.Show("Fehler beim Laden der UserId:\n" + ex.Message);
                 _userId = -1;
             }
         }
 
-        // ===== 2) Accounts in ComboBox laden =====
+        // accounts in die combobox laden
         private void LoadAccounts()
         {
             try
             {
+                // verbindung zur datenbank erstellen
                 using var conn = new MySqlConnection(_connectionString);
                 conn.Open();
 
+                // alle konten vom user holen
                 using var cmd = new MySqlCommand(@"
                     SELECT account_id, iban, balance, currency, status
                     FROM accounts
                     WHERE user_id=@uid
                     ORDER BY account_id;", conn);
 
+                // user_id in die query einsetzen
                 cmd.Parameters.AddWithValue("@uid", _userId);
 
+                // datatable erstellen
                 var dt = new DataTable();
+
+                // daten aus der datenbank in die datatable laden
                 using (var ad = new MySqlDataAdapter(cmd))
                 {
                     ad.Fill(dt);
                 }
 
+                // datatable an die combobox binden
                 CbAccounts.ItemsSource = dt.DefaultView;
+
+                // in der combobox soll die iban angezeigt werden
                 CbAccounts.DisplayMemberPath = "iban";
+
+                // als echter wert soll account_id benutzt werden
                 CbAccounts.SelectedValuePath = "account_id";
 
+                // wenn konten da sind, erstes konto direkt auswählen
                 if (dt.Rows.Count > 0)
                     CbAccounts.SelectedIndex = 0;
                 else
-                    ClearUi();
+                    ClearUi(); // wenn keine konten da sind, oberfläche leeren
             }
             catch (Exception ex)
             {
@@ -104,29 +136,35 @@ namespace Banking_app.userpages
             }
         }
 
-        // ===== 3) Konto auswählen -> Kontostand + Transfers =====
+        // wird ausgeführt wenn in der combobox ein anderes konto ausgewählt wird
         private void CbAccounts_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // prüfen ob wirklich ein datensatz ausgewählt wurde
             if (CbAccounts.SelectedItem is not DataRowView row)
                 return;
 
+            // account_id vom ausgewählten konto speichern
             _selectedAccountId = Convert.ToInt32(row["account_id"]);
 
+            // daten vom konto auslesen
             decimal balance = Convert.ToDecimal(row["balance"]);
             string currency = row["currency"]?.ToString() ?? "EUR";
             string iban = row["iban"]?.ToString() ?? "";
             string status = row["status"]?.ToString() ?? "";
 
+            // daten im fenster anzeigen
             TxtBalance.Text = $"{balance:0.00} {currency}";
             TxtIban.Text = $"IBAN: {iban}";
             TxtAccStatus.Text = $"Status: {status}";
 
+            // dazugehörige überweisungen laden
             LoadTransfers();
         }
 
-        // ===== 4) Transfers laden =====
+        // überweisungen vom ausgewählten konto laden
         private void LoadTransfers()
         {
+            // wenn kein konto ausgewählt ist -> abbrechen
             if (_selectedAccountId <= 0) return;
 
             try
@@ -134,8 +172,9 @@ namespace Banking_app.userpages
                 using var conn = new MySqlConnection(_connectionString);
                 conn.Open();
 
-                // OUT (von mir weg) = minus
-                // IN (zu mir hin)   = plus  (wenn to_iban meine IBAN ist)
+                // hier werden ausgehende und eingehende überweisungen zusammen geladen
+                // out = geld geht von meinem konto weg
+                // in = geld kommt auf mein konto
                 using var cmd = new MySqlCommand(@"
             SELECT
                 t.transfer_id,
@@ -166,16 +205,22 @@ namespace Banking_app.userpages
             ORDER BY created_at DESC
             LIMIT 50;", conn);
 
+                // account_id einsetzen
                 cmd.Parameters.AddWithValue("@aid", _selectedAccountId);
 
+                // datatable erstellen
                 var dt = new DataTable();
+
+                // daten laden
                 using (var ad = new MySqlDataAdapter(cmd))
                 {
                     ad.Fill(dt);
                 }
 
+                // daten im datagrid anzeigen
                 DgTransfers.ItemsSource = dt.DefaultView;
 
+                // kontodaten nochmal direkt aus der datenbank aktualisieren
                 RefreshAccountInfoFromDb();
             }
             catch (Exception ex)
@@ -184,6 +229,7 @@ namespace Banking_app.userpages
             }
         }
 
+        // lädt kontoinfos nochmal direkt aus der datenbank
         private void RefreshAccountInfoFromDb()
         {
             try
@@ -191,6 +237,7 @@ namespace Banking_app.userpages
                 using var conn = new MySqlConnection(_connectionString);
                 conn.Open();
 
+                // aktuelle daten von genau diesem konto holen
                 using var cmd = new MySqlCommand(@"
                     SELECT iban, balance, currency, status
                     FROM accounts
@@ -199,43 +246,52 @@ namespace Banking_app.userpages
 
                 cmd.Parameters.AddWithValue("@aid", _selectedAccountId);
 
+                // reader um die daten zu lesen
                 using var r = cmd.ExecuteReader();
+
+                // wenn nichts gefunden wurde -> abbrechen
                 if (!r.Read()) return;
 
+                // daten auslesen
                 decimal balance = r.GetDecimal("balance");
                 string currency = r.GetString("currency");
                 string iban = r.GetString("iban");
                 string status = r.GetString("status");
 
+                // daten im fenster anzeigen
                 TxtBalance.Text = $"{balance:0.00} {currency}";
                 TxtIban.Text = $"IBAN: {iban}";
                 TxtAccStatus.Text = $"Status: {status}";
             }
             catch
             {
-
+                // hier wird absichtlich nichts angezeigt
             }
         }
 
-        // ===== 5) Überweisung ausführen =====
+        // wird ausgeführt wenn man auf senden / überweisen klickt
         private void Send_Click(object sender, RoutedEventArgs e)
         {
+            // prüfen ob ein konto ausgewählt ist
             if (_selectedAccountId <= 0)
             {
                 MessageBox.Show("Bitte zuerst ein Konto auswählen.");
                 return;
             }
 
+            // eingaben aus den textboxen holen
             string toName = TbToName.Text.Trim();
             string toIban = TbToIban.Text.Trim();
             string purpose = TbPurpose.Text.Trim();
 
+            // prüfen ob name und iban ausgefüllt sind
             if (string.IsNullOrWhiteSpace(toName) || string.IsNullOrWhiteSpace(toIban))
             {
                 MessageBox.Show("Bitte Empfänger Name und IBAN ausfüllen.");
                 return;
             }
 
+            // prüfen ob der betrag gültig ist und größer als 0
             if (!TryParseAmount(TbAmount.Text, out decimal amount) || amount <= 0)
             {
                 MessageBox.Show("Bitte gültigen Betrag eingeben (z.B. 10,50).");
@@ -246,38 +302,47 @@ namespace Banking_app.userpages
             {
                 using var conn = new MySqlConnection(_connectionString);
                 conn.Open();
+
+                // transaktion starten
+                // dadurch wird alles zusammen gespeichert oder bei fehler alles zurückgesetzt
                 using var tx = conn.BeginTransaction();
 
-                // 1) Empfänger-Konto suchen (intern) - anhand IBAN
+                // empfänger-konto anhand der iban suchen
                 int? toAccountId = null;
                 using (var cmdFind = new MySqlCommand(
                     "SELECT account_id FROM accounts WHERE iban=@iban LIMIT 1;", conn, tx))
                 {
                     cmdFind.Parameters.AddWithValue("@iban", toIban);
                     var r = cmdFind.ExecuteScalar();
+
+                    // wenn ein konto gefunden wurde, account_id speichern
                     if (r != null)
                         toAccountId = Convert.ToInt32(r);
                 }
 
-                // 2) Sender-Balance lesen (FOR UPDATE)
+                // aktuellen kontostand vom sender lesen
+                // for update sperrt den datensatz kurz für sichere bearbeitung
                 decimal currentBalance;
                 using (var cmdBal = new MySqlCommand(
                     "SELECT balance FROM accounts WHERE account_id=@aid FOR UPDATE;", conn, tx))
                 {
                     cmdBal.Parameters.AddWithValue("@aid", _selectedAccountId);
                     var r = cmdBal.ExecuteScalar();
+
                     if (r == null) throw new Exception("Sender-Konto nicht gefunden.");
+
                     currentBalance = Convert.ToDecimal(r);
                 }
 
+                // prüfen ob genug geld da ist
                 if (currentBalance < amount)
                 {
-                    tx.Rollback();
+                    tx.Rollback(); // alles zurücksetzen
                     MessageBox.Show("Nicht genügend Guthaben.");
                     return;
                 }
 
-                // 3) Sender abbuchen
+                // geld vom sender abbuchen
                 using (var cmdUpd = new MySqlCommand(
                     "UPDATE accounts SET balance = balance - @amt WHERE account_id=@aid;", conn, tx))
                 {
@@ -286,17 +351,18 @@ namespace Banking_app.userpages
                     cmdUpd.ExecuteNonQuery();
                 }
 
-                // 4) Wenn Empfänger-Konto existiert: Empfänger gutschreiben
+                // wenn das empfänger-konto intern existiert, geld dort gutschreiben
                 if (toAccountId.HasValue)
                 {
                     using var cmdCredit = new MySqlCommand(
                         "UPDATE accounts SET balance = balance + @amt WHERE account_id=@to;", conn, tx);
+
                     cmdCredit.Parameters.AddWithValue("@amt", amount);
                     cmdCredit.Parameters.AddWithValue("@to", toAccountId.Value);
                     cmdCredit.ExecuteNonQuery();
                 }
 
-                // 5) Transfer speichern (wie bisher)
+                // überweisung in der tabelle transfers speichern
                 using (var cmdIns = new MySqlCommand(@"
                     INSERT INTO transfers
                     (from_account_id, to_beneficiary_id, to_name, to_iban, amount, purpose, status)
@@ -307,20 +373,23 @@ namespace Banking_app.userpages
                     cmdIns.Parameters.AddWithValue("@name", toName);
                     cmdIns.Parameters.AddWithValue("@iban", toIban);
                     cmdIns.Parameters.AddWithValue("@amt", amount);
+
+                    // wenn kein verwendungszweck eingegeben wurde, dann null speichern
                     cmdIns.Parameters.AddWithValue("@purpose",
                         string.IsNullOrWhiteSpace(purpose) ? (object)DBNull.Value : purpose);
 
                     cmdIns.ExecuteNonQuery();
                 }
 
-                tx.Commit();
+                tx.Commit(); // alles fest speichern
 
+                // eingabefelder leeren
                 TbToName.Clear();
                 TbToIban.Clear();
                 TbAmount.Clear();
                 TbPurpose.Clear();
 
-                LoadTransfers();
+                LoadTransfers(); // liste neu laden
                 MessageBox.Show("Überweisung ausgeführt.");
             }
             catch (Exception ex)
@@ -329,22 +398,29 @@ namespace Banking_app.userpages
             }
         }
 
+        // versucht den eingegebenen betrag in decimal umzuwandeln
         private bool TryParseAmount(string input, out decimal amount)
         {
             amount = 0m;
+
+            // wenn nichts eingegeben wurde -> false
             if (string.IsNullOrWhiteSpace(input)) return false;
 
+            // leerzeichen entfernen und komma zu punkt machen
             input = input.Trim().Replace(',', '.');
+
+            // versucht den text in eine zahl umzuwandeln
             return decimal.TryParse(input, NumberStyles.Number, CultureInfo.InvariantCulture, out amount);
         }
 
+        // setzt die anzeige zurück wenn kein konto da ist
         private void ClearUi()
         {
-            _selectedAccountId = -1;
-            TxtBalance.Text = "—";
-            TxtIban.Text = "IBAN: —";
-            TxtAccStatus.Text = "Status: —";
-            DgTransfers.ItemsSource = null;
+            _selectedAccountId = -1; // kein konto ausgewählt
+            TxtBalance.Text = "—"; // kontostand leeren
+            TxtIban.Text = "IBAN: —"; // iban leeren
+            TxtAccStatus.Text = "Status: —"; // status leeren
+            DgTransfers.ItemsSource = null; // datagrid leeren
         }
     }
 }
