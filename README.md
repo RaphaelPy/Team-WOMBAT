@@ -1,5 +1,25 @@
 # Banking App – Projektplanung (KW03) test
 
+## Login-Daten
+
+### Administrator (Admin Ansicht)
+
+* **Benutzername:** `Admin`
+* **Passwort:** `Admin`
+
+### Testbenutzer (User Ansicht)
+
+* **Benutzername:** `Test`
+* **Passwort:** `Test`
+
+### Weitere Benutzer (User Ansicht)
+
+* **Benutzername:** `{benutzername}`
+* **Passwort:** `{benutzername}`
+
+
+
+
 ## Projektübersicht
 Dieses Projekt ist eine einfache **Banking-App mit MySQL-Datenbankanbindung**, die über **phpMyAdmin** verwaltet wird.  
 Ziel ist die Umsetzung grundlegender Banking-Funktionen unter Berücksichtigung von Sicherheit, Datenvalidierung und sauberer Architektur.
