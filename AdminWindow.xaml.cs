@@ -11,6 +11,8 @@ namespace Banking_app
             "server=mysql.pb.bib.de;uid=pbt3h24akr;pwd=zJpyj6GPvtK6;database=pbt3h24akr_Wombank";
 
         private Admin _adminPage;
+        private CreateUser_Admin_ _createUserPage;
+        private DeleteUser_Admin_ _deleteUserPage;
 
         public AdminWindow()
         {
@@ -21,17 +23,35 @@ namespace Banking_app
         {
             NavigateToUsers();
         }
-
         private void Users_Click(object sender, RoutedEventArgs e)
         {
             NavigateToUsers();
         }
-
+        private void CreateUser_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateToCreateUser();
+        }
+        private void DeleteUser_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateToDeleteUser();
+        }
         private void NavigateToUsers()
         {
             _adminPage = new Admin();                
             AdminFrame.Navigate(_adminPage);      
             LoadUsersIntoPage();                     
+        }
+
+        private void NavigateToCreateUser()
+        {
+            _createUserPage = new CreateUser_Admin_();
+            AdminFrame.Navigate(_createUserPage);
+        }
+
+        private void NavigateToDeleteUser()
+        {
+            _deleteUserPage = new DeleteUser_Admin_();
+            AdminFrame.Navigate(_deleteUserPage);
         }
 
         private void LoadUsersIntoPage()
